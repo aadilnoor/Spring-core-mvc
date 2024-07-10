@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx.xsd
+                           http://www.springframework.org/schema/mvc
+                           http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+
+	<tx:annotation-driven />
+	<mvc:annotation-driven />
+
+	<context:component-scan base-package="com.crud" />
+
+	<!-- UI pages viewResolver -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+
+	<!-- Connection creation -->
+	<bean
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource"
+		name="dsObj" p:driverClassName="com.mysql.jdbc.Driver"
+		p:url="jdbc:mysql://localhost:3306/employee_db" p:username="root"
+		p:password="MYSQL#976#aadil" />
+
+	<!-- Hibernate configuration -->
+	<bean
+		class="org.springframework.orm.hibernate5.LocalSessionFactoryBean"
+		name="sfObj">
+
+		<property name="dataSource" ref="dsObj" />
+
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+			</props>
+		</property>
+
+
+		<!-- Annotated Classes -->
+		<property name="annotatedClasses">
+			<list>
+				<value>com.crud.entity.Employee</value>
+				<value>com.crud.entity.User</value>
+			</list>
+		</property>
+	</bean>
+
+
+	<!-- Hibernate template object creation Autowiring -->
+
+	<bean name="hibernateTemplate"
+		class="org.springframework.orm.hibernate5.HibernateTemplate">
+		<property name="sessionFactory" ref="sfObj"></property>
+	</bean>
+
+	<bean
+		class="org.springframework.orm.hibernate5.HibernateTransactionManager"
+		name="transactionManager">
+		<property name="sessionFactory" ref="sfObj" />
+
+	</bean>
+
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/myProfile" />
+			<bean class="com.crud.interceptor.UserAuthentication"></bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+</beans>
